@@ -150,7 +150,12 @@ void clientEvent(Client c) {
 }
 ```
 ## 4.서버에서 스마트폰으로 1을 보내면 스마트폰의 화면이 푸른색으로, 0을 보내면 붉은 색으로 보내는 코드를 적으시오. 앱 인벤터의 컴포넌트와 내용을 적으시오.
-앱인벤터에서
+- 사용자 정의 컴포넌트를 앱 화면에 추가한 후, 해당 컴포넌트의 블록 코드를 작성합니다.
+- 데이터를 서버로 전송하고 서버로부터 데이터를 수신하는 기능을 구현합니다.
+버튼을 클릭하면 서버로 데이터를 전송하도록 블록 코드를 작성합니다.
+또한 서버로부터의 응답 데이터를 받아 배경색을 변경하는 블록 코드도 작성합니다.
+- 컴포넌트 속성 활용 사용자 정의 컴포넌트에 추가한 속성을 활용하여 서버의 IP 주소, 포트 번호, 데이터 저장 등을 처리합니다.
+- 오류 처리를 위한 블록 코드를 추가하여 예외 상황을 처리합니다. 예를 들어, 서버에 연결할 수 없는 경우 등을 고려합니다.
 ```
 [아두이노코드]
 #include <stdio.h>
@@ -218,6 +223,44 @@ void serialEvent(Serial port) {
     }
   }
 }
+```
+아두이노와 프로세싱, 앱인벤터를 구성하면 서버 통신을 통해스마트폰의 배경색이 변경되는 프로젝트가 구현 될 것입니다. 
+## 5.스마트폰에서 on 버튼을 누르면 서버를 거처 아두이노의 7번 핀의 LED 켜지고, off 버튼을 누르면 7번 핀의 LED가 꺼진다. 스마트폰의 텍스트 박스에 숫자 1부터 8 중에 하나를 넣고, Send 버튼을 누르면 아두이노의 4번 핀에 달린 피에조 스피커가 도,레,~ 시,도가 작동되도록 하시오.
+```
+[아두이노 코드]
+int ledPin = 7;  // LED가 연결된 핀 번호
+int speakerPin = 4; // 피에조 스피커가 연결된 핀 번호
+
+void setup() {
+  pinMode(ledPin, OUTPUT);
+  pinMode(speakerPin, OUTPUT);
+  Serial.begin(9600);  // 시리얼 통신 초기화
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    char receivedChar = Serial.read();
+    if (receivedChar == '1') {
+      digitalWrite(ledPin, HIGH); // LED를 켭니다.
+      tone(speakerPin, 261.63); // 도
+    } else if (receivedChar == '0') {
+      digitalWrite(ledPin, LOW); // LED를 끕니다.
+      noTone(speakerPin); // 스피커를 끕니다.
+    }
+  }
+}
 
 ```
-## 5.스마트폰에서 on 버튼을 누르면 서버를 거처 아두이노의 7번 핀의 LED 켜지고, off 버튼을 누르면 7번 핀의 LED가 꺼진다. 스마트폰의 텍스트 박스에 숫자 1부터 8 중에 하나를 넣고, Send 버튼을 누르면 아두이노의 4번 핀에 달린 피에조 스피커가 도,레,~ 시,도가 작동되도록 하시오.
+앱인벤터의 블록코딩</br>
+- ButtonOn
+when ButtonOn.Click</br>
+do Call Web1.Get with "http://서버의_IP_주소/on"
+- ButtonOff
+when ButtonOff.Click</br>
+do Call Web1.Get with "http://서버의_IP_주소/off"</br>
+- ButtonSend
+when ButtonSend.Click</br>
+do Call Web1.Get with "http://서버의_IP_주소/play/" & TextBox.Text
+- Web1.GotText
+when Web1.GotText</br>
+set TextBox.Text to Web1.TextResponse
