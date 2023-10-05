@@ -150,5 +150,74 @@ void clientEvent(Client c) {
 }
 ```
 ## 4.서버에서 스마트폰으로 1을 보내면 스마트폰의 화면이 푸른색으로, 0을 보내면 붉은 색으로 보내는 코드를 적으시오. 앱 인벤터의 컴포넌트와 내용을 적으시오.
+앱인벤터에서
+```
+[아두이노코드]
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 
+int main() {
+    int serverSocket;
+    serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if (serverSocket == -1) {
+        perror("Socket creation failed...\n");
+        exit(0);
+    }
+
+    struct sockaddr_in serverAddr;
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(8080); // 사용할 포트 번호 (예: 8080)
+    serverAddr.sin_addr.s_addr = inet_addr("192.168.215.247"); // 스마트폰의 IP 주소
+
+    if (connect(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1) {
+        perror("Connection to the server failed...\n");
+        exit(0);
+    }
+
+    char dataToSend[2] = "1"; // 전송할 데이터 ("1" 또는 "0")
+    send(serverSocket, dataToSend, sizeof(dataToSend), 0);
+
+    close(serverSocket);
+    return 0;
+}
+
+```
+```
+[프로세싱코드]
+import processing.serial.*;
+
+Serial arduino;
+color bgColor = color(255);  // 초기 배경 색상 (흰색)
+
+void setup() {
+  size(400, 400);
+  arduino = new Serial(this, "COM3", 9600);  // "COM3"에는 사용하는 시리얼 포트 번호가 들어갑니다.
+}
+
+void draw() {
+  background(bgColor);
+}
+
+void keyPressed() {
+  if (key == '1' || key == '0') {
+    arduino.write(key);
+  }
+}
+
+void serialEvent(Serial port) {
+  String data = port.readStringUntil('\n');
+  if (data != null) {
+    data = data.trim();
+    if (data.equals("1")) {
+      bgColor = color(0, 0, 255);  // 푸른색
+    } else if (data.equals("0")) {
+      bgColor = color(255, 0, 0);  // 붉은색
+    }
+  }
+}
+
+```
 ## 5.스마트폰에서 on 버튼을 누르면 서버를 거처 아두이노의 7번 핀의 LED 켜지고, off 버튼을 누르면 7번 핀의 LED가 꺼진다. 스마트폰의 텍스트 박스에 숫자 1부터 8 중에 하나를 넣고, Send 버튼을 누르면 아두이노의 4번 핀에 달린 피에조 스피커가 도,레,~ 시,도가 작동되도록 하시오.
